@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "885896712644",
+    "project_id": "fetosense-plus",
+    "storage_bucket": "fetosense-plus.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:885896712644:android:272262fc21cb3400411491",
+        "android_client_info": {
+          "package_name": "com.carenx.fetosense.plus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWFT-aTR52zxMZ3OwdW1fKvFax0oSHT2g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
