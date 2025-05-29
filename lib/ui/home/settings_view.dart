@@ -55,7 +55,7 @@ class _SettingsPageState extends State<SettingsView> with AutomaticKeepAliveClie
                   SwitchPreference(
                     'Pre save mother',
                     'preSaveMother',
-                    defaultVal: true,
+                    defaultVal: false,
                     switchActiveColor: Theme.of(context).colorScheme.onPrimary,
                     onChange: () {
                       setState(() {});

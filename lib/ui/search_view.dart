@@ -3,27 +3,24 @@ import 'package:l8fe/models/doctor_model.dart';
 import 'package:l8fe/models/mother_model.dart';
 import 'package:l8fe/models/organization_model.dart';
 import 'package:flutter/material.dart';
-import 'package:l8fe/ui/widgets/mother_card.dart';
 import 'package:l8fe/view_models/crud_view_model.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import 'dart:convert';
 
 class SearchView extends StatefulWidget {
   final Doctor? doctor;
   final Organization? organization;
-  //HomeView(@required this.doctor);
 
-  const SearchView({super.key, this.doctor, this.organization}) ;
-  @override
+  const SearchView({super.key, this.doctor, this.organization});
+
   // TODO: implement screenName
   String get screenName => "SearchScreen";
 
   @override
-  _SearchViewState createState() => _SearchViewState();
+  SearchViewState createState() => SearchViewState();
 }
 
-class _SearchViewState extends State<SearchView> {
+class SearchViewState extends State<SearchView> {
   List<Mother>? mothers;
 
   final databaseReference = FirebaseFirestore.instance;
@@ -43,13 +40,10 @@ class _SearchViewState extends State<SearchView> {
   Future<dynamic> fetchMother(String query) async {
     debugPrint("fetchMother");
     try {
+      if (query.trim().length > 2) {
+        //var body;
 
-      if(query.trim().length > 2){
-
-
-      //var body;
-
-      /*final body = json.encode( {
+        /*final body = json.encode( {
         "searchDocumentId": widget.doctor!.documentId,
         "orgDocumentId": widget.doctor!.organizationId ?? "NANANANANNANA",
         "searchString": query,
@@ -69,7 +63,7 @@ class _SearchViewState extends State<SearchView> {
       }
     } catch (error) {
       debugPrint(error.toString());
-      throw error;
+      rethrow;
     }
   }
 
@@ -85,60 +79,65 @@ class _SearchViewState extends State<SearchView> {
         .fetchMothersAsStreamSearchMothers(widget.doctor!.organizationId, "A");
 
     return Scaffold(
-        body: SafeArea(
-            child: Column(children: <Widget>[
-      Container(
-        margin: const EdgeInsets.symmetric(vertical: 7),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(width: 0.5, color: Colors.grey)),
-        ),
-        child: ListTile(
-            title: const Text(
-              "fetosense",
-              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 14),
-            ),
-            subtitle: TextField(
-              autofocus: false,
-              style: const TextStyle(fontSize: 18.0, color: Color(0xFFbdc6cf)),
-              textCapitalization: TextCapitalization.words,
-              controller: searchController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: 'Search mothers...',
-                contentPadding:
-                    const EdgeInsets.only(left: 16, bottom: 8.0, top: 8.0),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.black),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.black),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 7),
+              decoration: const BoxDecoration(
+                border:
+                    Border(bottom: BorderSide(width: 0.5, color: Colors.grey)),
               ),
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.close, size: 35),
-              onPressed: () {
-                setState(() {
-                  searchController.clear();
-                  query = '*';
-                });
-              },
-            )
-            /*Container(
+              child: ListTile(
+                  title: const Text(
+                    "fetosense",
+                    style: TextStyle(fontWeight: FontWeight.w300, fontSize: 14),
+                  ),
+                  subtitle: TextField(
+                    autofocus: false,
+                    style: const TextStyle(
+                        fontSize: 18.0, color: Color(0xFFbdc6cf)),
+                    textCapitalization: TextCapitalization.words,
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: 'Search mothers...',
+                      contentPadding: const EdgeInsets.only(
+                          left: 16, bottom: 8.0, top: 8.0),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.black),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.black),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.close, size: 35),
+                    onPressed: () {
+                      setState(() {
+                        searchController.clear();
+                        query = '*';
+                      });
+                    },
+                  )
+                  /*Container(
                       margin: EdgeInsets.only(top: 12),
                       child :Icon(Icons.close, size: 35),)*/
+                  ),
             ),
-      ),
-      Expanded(
-          child: Container(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-              child: FutureBuilder(
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: FutureBuilder(
                   future: fetchMother(query.toLowerCase()),
-                  builder: (context,AsyncSnapshot<dynamic> snapshot) {
-                    if (!snapshot.hasData) return Center(child: new Text('No Data Found'));
+                  builder: (context, AsyncSnapshot<dynamic> snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(child: new Text('No Data Found'));
+                    }
 
                     // final results = snapshot.data.docs.where(
                     //     (DocumentSnapshot a) => a
@@ -147,22 +146,27 @@ class _SearchViewState extends State<SearchView> {
                     //         .toLowerCase()
                     //         .contains(query.toLowerCase()));
 // debugPrint("Snapshot " + snapshot.data['data'].toString());
-                    final mothers = snapshot.data!['data']
-                        .map((doc) => doc)
-                        .toList();
+                    final mothers =
+                        snapshot.data!['data'].map((doc) => doc).toList();
                     // debugPrint(widget.doctor.organizationId);
                     //return Text("data");
 
                     return ListView.builder(
-                      itemCount: mothers.length,
-                      itemBuilder: (buildContext, index) =>SizedBox()
-                          //MotherCard(motherDetails: mothers[index],selected: false,),
-                    );
+                        itemCount: mothers.length,
+                        itemBuilder: (buildContext, index) => SizedBox()
+                        //MotherCard(motherDetails: mothers[index],selected: false,),
+                        );
                     /*return ListView(
               children: results.map<Widget>((a) => Text(a.data['name'].toString())).toList()
           );*/
-                  })))
-    ])));
+                  },
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -170,7 +174,7 @@ class _SearchViewState extends State<SearchView> {
     super.initState();
     //_focus.addListener(_onFocusChange);
     searchController.addListener(() {
-      debugPrint("${searchController.text}");
+      debugPrint(searchController.text);
       setState(() {
         query = searchController.text.isEmpty ? "*" : searchController.text;
       });
@@ -184,7 +188,7 @@ class _SearchViewState extends State<SearchView> {
     _focus.dispose();
   }
 
-  /* void getDoctor() async {
+/* void getDoctor() async {
 
     final userProvider = Provider.of<CRUDModel>(context);
     await userProvider.getDoctorById("").then((Mother mother) {
@@ -196,7 +200,7 @@ class _SearchViewState extends State<SearchView> {
 
   }*/
 
-  /* void _handleSearch(String value) {
+/* void _handleSearch(String value) {
     if (value.length < 3) {
       setState(() {
         filter = "";
@@ -209,7 +213,7 @@ class _SearchViewState extends State<SearchView> {
     }
   }
 */
-  /*Future<List<Mother>> getAllMothers(String text) async {
+/*Future<List<Mother>> getAllMothers(String text) async {
     Stream<QuerySnapshot> snapshot = Provider.of<CRUDModel>(context)
         .fetchMothersAsStreamSearch(widget.doctor!.organizationId, query);
     snapshot.map((qShot) {

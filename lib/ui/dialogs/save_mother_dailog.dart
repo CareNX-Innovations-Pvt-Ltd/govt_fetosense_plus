@@ -44,7 +44,7 @@ class _DialogState extends State<SaveMotherDialog> {
     super.initState();
     pageController = PageController(initialPage: 0);
     final device = context.read<SessionCubit>().currentUser.value!;
-    mother["documentId"] = FirebaseFirestore.instance.collection("tests").doc().id;
+    mother["documentId"] = FirebaseFirestore.instance.collection("users").doc().id;
     mother["associations"] = {device.documentId:Association.fromUser(device).toJson()};
   }
 
