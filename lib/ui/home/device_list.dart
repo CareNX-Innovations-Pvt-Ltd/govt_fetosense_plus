@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:l8fe/ble/bluetooth_ctg_service.dart';
 
 
 class DeviceListScreen extends StatefulWidget {
@@ -310,6 +311,7 @@ class _DeviceListState extends State<DeviceListScreen> with AutomaticKeepAliveCl
 
   void refresh() {
     list = FlutterBluePlus.connectedDevices;
+    BluetoothCTGService.instance.listenToNativeEvents();
     setState(() {});
   }
 }

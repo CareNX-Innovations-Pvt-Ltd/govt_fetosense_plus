@@ -38,8 +38,8 @@ class Device extends UserModel{
       'deviceId':deviceId,
       'deviceName' : deviceName,
       'deviceCode' : deviceCode,
-      'noOfMother' : noOfMother??0,
-      'noOfTests' : noOfTests??0,
+      'noOfMother' : noOfMother,
+      'noOfTests' : noOfTests,
     };
   }
 }

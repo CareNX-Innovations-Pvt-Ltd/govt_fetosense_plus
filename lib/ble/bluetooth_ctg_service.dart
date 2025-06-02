@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:l8fe/ble/base_bluetooth_service.dart';
 import 'package:l8fe/ble/bluetooth_spo2_service.dart';
 import 'package:l8fe/models/device_model.dart';
 import 'package:l8fe/utils/bluetooth_data.dart';
 import 'package:l8fe/utils/fhr_data.dart';
 import 'package:preferences/preference_service.dart';
 
-class BluetoothCTGService {
+class BluetoothCTGService implements BaseBluetoothService {
   late BluetoothDevice device;
   late List<BluetoothService> services;
   bool foundCtgService = false;
@@ -248,6 +248,27 @@ class BluetoothCTGService {
     }, onError: (error) {
       print('Error receiving event: $error');
     });
+  }
+
+  @override
+  Future<void> connect(device) async {
+    startBle(device);
+  }
+
+  @override
+  Stream<FhrData?> get dataStream => _streamController.stream;
+
+  @override
+  Future<void> disconnect() {
+    if (deviceReady.value) {
+      deviceReady.value = false;
+      ctgDeviceFound.value = false;
+      dataListener?.cancel();
+      _streamController.close();
+      return device.disconnect();
+    } else {
+      return Future.value();
+    }
   }
 }
 

@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:l8fe/models/device_model.dart';
-import 'package:l8fe/models/my_user.dart';
-import 'package:l8fe/models/user_model.dart';
 
 class FirebaseAuthRepo {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -24,12 +22,12 @@ class FirebaseAuthRepo {
         if (querySnapshot.docs.isNotEmpty) {
           // ✅ User exists
           final doc = querySnapshot.docs.first;
-          final data = doc.data() as Map<String, dynamic>;
+          final data = doc.data();
           return Device.fromMap(data, doc.id);
         } else {
           // ❌ User does not exist, create one
           final newUserData = <String, dynamic>{
-            'type': 'mother', // or any role you assign
+            'type': 'device',
             'organizationId': '',
             'organizationName': '',
             'organizationIdBabyBeat': '',
