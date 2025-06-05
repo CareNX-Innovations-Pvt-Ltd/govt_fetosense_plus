@@ -9,7 +9,6 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:l8fe/ble/bluetooth_ctg_service.dart';
 import 'package:l8fe/ble/bluetooth_spo2_service.dart';
 import 'package:l8fe/ble/unified_service.dart';
 import 'package:l8fe/bloc/session/session_cubit.dart';
@@ -55,6 +54,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   bool deviceSpO2Found = false;
   late SharedPreferences prefs;
   Timer? _timer;
+  final UnifiedBluetoothService _bluetoothService = UnifiedBluetoothService();
 
   //StreamSubscription<ConnectionStateUpdate>? changeSub;
   //String? btDevice2;
@@ -103,13 +103,14 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     user = context.read<SessionCubit>().currentUser.value!;
 
     tabChildren = getChildren();
-    // initBt();
-    // BluetoothCTGService.instance.startBle(user);
-    UnifiedBluetoothService().connect(user);
+    initBt();
+   _bluetoothService.connect(user);
 
-    UnifiedBluetoothService().connectedDeviceNotifier.addListener(() {
+    _bluetoothService.isConnectedNotifier.addListener(() {
       if (mounted) {
-          deviceFound = UnifiedBluetoothService().connectedDeviceNotifier.value;
+          setState(() {
+            deviceFound = UnifiedBluetoothService().isConnectedNotifier.value;
+          });
       }
     });
   }
@@ -118,7 +119,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   void didChangeDependencies() {
     super.didChangeDependencies();
     BluetoothSPo2Service.instance.deviceReady.notifyListeners();
-    // BluetoothCTGService.instance.deviceReady.notifyListeners();
+    _bluetoothService.isConnectedNotifier.notifyListeners();
   }
 
   @override
@@ -140,30 +141,28 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     super.activate();
   }
 
-  // initBt() {
-  //   BluetoothCTGService.instance.deviceReady.addListener(() async {
-  //     deviceFound = BluetoothCTGService.instance.deviceReady.value;
-  //     if (BluetoothCTGService.instance.deviceReady.value) {
-  //       btDevice = BluetoothCTGService.instance.device;
-  //       readChar = BluetoothCTGService.instance.readChar;
-  //       writeChar = BluetoothCTGService.instance.writeChar;
-  //     }
-  //     if (mounted) setState(() {});
-  //   });
-  //
-  //   BluetoothSPo2Service.instance.deviceReady.addListener(() async {
-  //     deviceSpO2Found = BluetoothSPo2Service.instance.deviceReady.value;
-  //     if (BluetoothSPo2Service.instance.deviceReady.value) {
-  //       btDeviceSPo2 = BluetoothSPo2Service.instance.device;
-  //       readCharSpO2 = BluetoothSPo2Service.instance.pulseOximeterChar;
-  //       await readCharSpO2?.setNotifyValue(true);
-  //     }
-  //     if (mounted) setState(() {});
-  //   });
-  // }
+  initBt() {
+    _bluetoothService.isConnectedNotifier.addListener(() async {
+      deviceFound = _bluetoothService.isConnectedNotifier.value;
+      if (_bluetoothService.isConnectedNotifier.value) {
+        readChar = _bluetoothService.readChar;
+        writeChar = _bluetoothService.writeChar;
+      }
+    });
+
+    BluetoothSPo2Service.instance.deviceReady.addListener(() async {
+      deviceSpO2Found = BluetoothSPo2Service.instance.deviceReady.value;
+      if (BluetoothSPo2Service.instance.deviceReady.value) {
+        btDeviceSPo2 = BluetoothSPo2Service.instance.device;
+        readCharSpO2 = BluetoothSPo2Service.instance.pulseOximeterChar;
+        await readCharSpO2?.setNotifyValue(true);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    print("NOTIFIER VALUE IN HOME : ${_bluetoothService.isConnectedNotifier.value}");
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: Theme.of(context).appBarTheme.systemOverlayStyle!.copyWith(
             statusBarColor: Colors.transparent, // status bar color

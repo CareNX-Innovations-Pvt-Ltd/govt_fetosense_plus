@@ -23,6 +23,8 @@ class _HomeViewState extends State<HomeView>
   bool isFetchingBp = false;
 
   late final SharedPreferences prefs;
+  final UnifiedBluetoothService _bluetoothService =
+      UnifiedBluetoothService();
 
   @override
   void initState() {
@@ -37,11 +39,13 @@ class _HomeViewState extends State<HomeView>
   Widget build(BuildContext context) {
     super.build(context);
     FhrData? fhrData;
+    print("NOTIFIER VALUE: ${_bluetoothService.isConnectedNotifier.value}");
     return StreamBuilder<FhrData?>(
-        stream: UnifiedBluetoothService().dataStream,
+        stream: _bluetoothService.dataStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             fhrData = snapshot.data;
+            print( 'FHR Data: ${fhrData?.toString()}');
           }
           return SizedBox(
             height: 0.6.sh,

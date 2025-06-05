@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:l8fe/ble/bluetooth_ctg_service.dart';
 import 'package:l8fe/ble/bluetooth_spo2_service.dart';
+import 'package:l8fe/ble/unified_service.dart';
 import 'package:l8fe/bloc/session/session_cubit.dart';
 import 'package:l8fe/services/firestore_database.dart';
 import 'package:l8fe/ui/home/mother_home.dart';
@@ -57,9 +58,8 @@ class DetailsView extends StatefulWidget {
 class _DetailsViewState extends State<DetailsView>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  final ActionSliderController _actionController = ActionSliderController();
   Mother? mom;
-
+  final UnifiedBluetoothService _bluetoothService = UnifiedBluetoothService();
   int gridPreMin = 3;
   late int pointsOnDisplay;
   double mTouchStart = 0;
@@ -137,7 +137,6 @@ class _DetailsViewState extends State<DetailsView>
     //movements = _movements < 10 ? "0$_movements" : '$_movements';
   }
 
-  static String key ='''MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAstWB95C5pHLXiYW59qyO4Xb+59KYVm9Hywbo77qETZVAyc6VIsxU+UWhd/k/YtjZibCznB+HaXWX9TVTFs9Nwgv7LRGq5uLczpZQDrU7dnGkl/urRA8p0Jv/f8T0MZdFWQgks91uFffeBmJOb58u68ZRxSYGMPe4hb9XXKDVsgoSJaRNYviH7RgAI2QhTCwLEiMqIaUX3p1SAc178ZlN8qHXSSGXvhDR1GKM+y2DIyJqlzfik7lD14mDY/I4lcbftib8cv7llkybtjX1AayfZp4XpmIXKWv8nRM488/jOAF81Bi13paKgpjQUUuwq9tb5Qd/DChytYgBTBTJFe7irDFCmTIcqPr8+IMB7tXA3YXPp3z605Z6cGoYxezUm2Nz2o6oUmarDUntDhq/PnkNergmSeSvS8gD9DHBuJkJWZweG3xOPXiKQAUBr92mdFhJGm6fitO5jsBxgpmulxpG0oKDy9lAOLWSqK92JMcbMNHn4wRikdI9HSiXrrI7fLhJYTbyU3I4v5ESdEsayHXuiwO/1C8y56egzKSw44GAtEpbAkTNEEfK5H5R0QnVBIXOvfeF4tzGvmkfOO6nNXU3o/WAdOyV3xSQ9dqLY5MEL4sJCGY1iJBIAQ452s8v0ynJG5Yq+8hNhsCVnklCzAlsIzQpnSVDUVEzv17grVAw078CAwEAAQ==''';
 
   getMom()async {
     //debugPrint("getMom ==== ${mom?.toJson().toString()}");
@@ -275,7 +274,7 @@ class _DetailsViewState extends State<DetailsView>
                     ),*/
                   ],
                 ),
-                if(mom!=null && BluetoothCTGService.instance.deviceReady.value && widget.test.bpmEntries2.isNotEmpty)
+                if(mom!=null && _bluetoothService.isConnectedNotifier.value && widget.test.bpmEntries2.isNotEmpty)
                 Center(
                   child: InkWell(
                     onTap: (){
@@ -583,7 +582,7 @@ class _DetailsViewState extends State<DetailsView>
                                   textAlign: TextAlign.center,
                                 ),
                               ),
-                            ]): (mom!=null && BluetoothCTGService.instance.deviceReady.value) ?
+                            ]): (mom!=null && _bluetoothService.isConnectedNotifier.value) ?
                               Center(
                                 child: InkWell(
                                   onTap: (){

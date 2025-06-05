@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../ble/bluetooth_ctg_service.dart';
+import '../../ble/unified_service.dart';
 
 
 class MotherHome extends StatefulWidget {
@@ -31,8 +32,8 @@ class MotherHome extends StatefulWidget {
 
 }
 class HomeState extends State<MotherHome>{
-  final ActionSliderController _actionController = ActionSliderController();
   late SharedPreferences prefs;
+  final UnifiedBluetoothService _bluetoothService = UnifiedBluetoothService();
 
   late final Device user;
   Mother? mom;
@@ -245,7 +246,7 @@ class HomeState extends State<MotherHome>{
                                   }
                                 }),
                           ),
-                          if(mom!=null && BluetoothCTGService.instance.deviceReady.value)
+                          if(mom!=null && _bluetoothService.isConnectedNotifier.value)
                             Align(
                               alignment: Alignment.bottomRight,
                               child: InkWell(

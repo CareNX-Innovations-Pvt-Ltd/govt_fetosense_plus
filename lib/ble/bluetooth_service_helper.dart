@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'dart:typed_data';
 
@@ -11,10 +11,9 @@ import 'adpcm.dart';
 import 'my_fhr_buffer.dart' as buf;
 import 'my_fhr_buffer.dart';
 
-
 class BluetoothSerialService implements BaseBluetoothService {
   static final BluetoothSerialService _instance =
-  BluetoothSerialService._internal();
+      BluetoothSerialService._internal();
 
   factory BluetoothSerialService() => _instance;
 
@@ -25,7 +24,8 @@ class BluetoothSerialService implements BaseBluetoothService {
   Function(BluetoothData)? onDataReceived;
   final MyAudioTrack16Bit myAudioTrack16Bit = MyAudioTrack16Bit();
 
-  final StreamController<FhrData> _dataStreamController = StreamController<FhrData>.broadcast();
+  final StreamController<FhrData> _dataStreamController =
+      StreamController<FhrData>.broadcast();
 
   FhrData? lastFhr;
 
@@ -79,10 +79,10 @@ class BluetoothSerialService implements BaseBluetoothService {
   void _settingBuffer() {
     if (_buffer.canRead()) {
       BluetoothData? parsedData = _buffer.getBag();
-      if (parsedData != null ) {
+      if (parsedData != null) {
         // onDataReceived!(parsedData);
         final last = dataAnalyze(parsedData);
-        if(last!=null && last is FhrData){
+        if (last != null && last is FhrData) {
           // print("parsed data = ${lastFhr.toString()} : last $last");
           lastFhr = last;
         }
@@ -92,10 +92,13 @@ class BluetoothSerialService implements BaseBluetoothService {
     }
   }
 
+  @override
   Future<void> disconnect() async {
     if (_connection != null) {
       _connection!.dispose();
       _connection = null;
+      _dataStreamController.close();
+
     }
   }
 
@@ -111,10 +114,6 @@ class BluetoothSerialService implements BaseBluetoothService {
       }
     }
     return true;
-  }
-
-  void dispose() {
-    disconnect();
   }
 
   dynamic dataAnalyze(BluetoothData data) {
@@ -151,18 +150,6 @@ class BluetoothSerialService implements BaseBluetoothService {
         checkSum = checkSum & 0xFF;
 
         if (checkSum == data.mValue[11]) {
-          int index = (0xFF & data.mValue[3]) + ((data.mValue[4] & 0xFF) << 8);
-
-          // if (!monState) {
-          //   reSendStartOrStopCmd(false);
-          // } else {
-          //   rePlyAckMonIndex(index);
-          // }
-
-          // if (monCount != index) {
-          // monCount = index + 1;
-          // } else {
-          // monCount = index + 1;
           fhr = FhrData();
           fhr.fhr1 = data.mValue[5] & 0xFF;
           fhr.fhr2 = data.mValue[6] & 0xFF;
@@ -177,7 +164,6 @@ class BluetoothSerialService implements BaseBluetoothService {
           fhr.isHaveAfm = ((data.mValue[10] & 128) != 0 ? 1 : 0);
 
           _dataStreamController.add(fhr);
-
         }
         break;
 
@@ -198,39 +184,34 @@ class BluetoothSerialService implements BaseBluetoothService {
   }
 
   void decodeData(List<int> decodeValue) {
-    // myAudioTrack16Bit.prepareAudioTrack();
-    int len = decodeValue.length;
     if (myAudioTrack16Bit.initialized) {
       myAudioTrack16Bit.playPCM(decodeValue);
     }
-    /*if (len == 400) {
-      myAudioTrack16Bit.writeAudioTrack(decodeValue, 200, 200, false);
-    }*/
   }
 
   @override
   Future<void> connect(device) async {
     try {
-          await disconnect();
-          _connection = await BluetoothConnection.toAddress(device.address);
-          print("Connected to ${device.name}");
+      await disconnect();
+      _connection = await BluetoothConnection.toAddress(device.address);
+      print("Connected to ${device.name}");
 
-          _connection!.input!.listen((data) {
-            _onDataReceived(data);
-          }, onDone: () {
-            print("Bluetooth Connection Closed");
-          });
-          Timer.periodic(
-            const Duration(milliseconds: 10),
-                (timer) {
-              _settingBuffer();
-              if(timer.tick%100 == 0 && lastFhr!=null){
-                _dataStreamController.add(lastFhr!);
-              }
-            },
-          );
-        } catch (e) {
-          print('Connection error: $e');
-        }
+      _connection!.input!.listen((data) {
+        _onDataReceived(data);
+      }, onDone: () {
+        print("Bluetooth Connection Closed");
+      });
+      Timer.periodic(
+        const Duration(milliseconds: 10),
+        (timer) {
+          _settingBuffer();
+          if (timer.tick % 100 == 0 && lastFhr != null) {
+            _dataStreamController.add(lastFhr!);
+          }
+        },
+      );
+    } catch (e) {
+      print('Connection error: $e');
+    }
   }
 }

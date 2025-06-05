@@ -46,16 +46,9 @@ class _DeviceListState extends State<DeviceListScreen> with AutomaticKeepAliveCl
   }
 
 
-  void _startScanning() {
-    if(!FlutterBluePlus.isScanningNow ){
-      FlutterBluePlus.startScan(timeout: const Duration(seconds: 100));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    //list = FlutterBluePlus.connectedDevices;//.where((element) => element.platformName.toString().contains("L8")).toList();
-    debugPrint("${FlutterBluePlus.connectedDevices.toList()}");
     return Stack(
       children: [
         Container(
@@ -323,10 +316,10 @@ class BluetoothCard extends StatelessWidget {
   final Map<String,dynamic> data;
 
   const BluetoothCard({
-    Key? key,
+    super.key,
     this.color,
     required this.data, required this.type,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

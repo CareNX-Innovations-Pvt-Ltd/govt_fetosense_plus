@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:action_slider/action_slider.dart';
 import 'package:another_xlider/another_xlider.dart';
 import 'package:another_xlider/enums/hatch_mark_alignment_enum.dart';
 import 'package:another_xlider/models/handler.dart';
@@ -9,7 +8,6 @@ import 'package:another_xlider/models/tooltip/tooltip.dart';
 import 'package:another_xlider/models/trackbar.dart';
 import 'package:another_xlider/widgets/sized_box.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_beep_plus/flutter_beep_plus.dart';
@@ -17,8 +15,8 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart' hide TextDirection;
-import 'package:l8fe/ble/bluetooth_ctg_service.dart';
 import 'package:l8fe/ble/bluetooth_spo2_service.dart';
+import 'package:l8fe/ble/unified_service.dart';
 import 'package:l8fe/bloc/session/session_cubit.dart';
 import 'package:l8fe/constants/my_color_scheme.dart';
 import 'package:l8fe/models/mother_model.dart';
@@ -62,6 +60,7 @@ class _DetailsViewState extends State<TestView>
   BluetoothCharacteristic? writeChar;
   BluetoothDevice? btDevice;
   BluetoothDevice? btDeviceSPo2;
+  final UnifiedBluetoothService _bluetoothService = UnifiedBluetoothService();
 
   late AnimationController _animationController;
   late AnimationController _animationControllerFHR1;
@@ -149,7 +148,7 @@ class _DetailsViewState extends State<TestView>
     reSetBt(true);
     reSetBt(false);
 
-    BluetoothCTGService.instance.deviceReady.addListener(() async {
+    _bluetoothService.isConnectedNotifier.addListener(() async {
       reSetBt(true);
     });
 
@@ -161,12 +160,11 @@ class _DetailsViewState extends State<TestView>
 
   Future<void> reSetBt(ctg)async {
     if(ctg) {
-      deviceFound = BluetoothCTGService.instance.deviceReady.value;
-      if (BluetoothCTGService.instance.deviceReady.value) {
-        btDevice = BluetoothCTGService.instance.device;
+      deviceFound = _bluetoothService.isConnectedNotifier.value;
+      if (_bluetoothService.isConnectedNotifier.value) {
         //btDevice?.connectionState.listen((event) => listenToChange);
-        readChar = BluetoothCTGService.instance.readChar;
-        writeChar = BluetoothCTGService.instance.writeChar;
+        readChar = _bluetoothService.readChar;
+        writeChar = _bluetoothService.writeChar;
         //await readChar?.setNotifyValue(true);
         //dataListener?.cancel();
         //dataListener = readChar?.onValueReceived.listen((event) =>getFHRData(event.toList()));
@@ -195,7 +193,7 @@ class _DetailsViewState extends State<TestView>
     initialize();
     super.didChangeDependencies();
     BluetoothSPo2Service.instance.deviceReady.notifyListeners();
-    BluetoothCTGService.instance.deviceReady.notifyListeners();
+    _bluetoothService.isConnectedNotifier.notifyListeners();
   }
 
   void startTest() {
@@ -444,10 +442,6 @@ class _DetailsViewState extends State<TestView>
     test.gAge = ((mother.lmp)
         .difference(DateTime.now())
         .inDays ~/ 7).abs();
-    final interpreter = Interpretations2
-        .withData(
-        test.bpmEntries, test.gAge!,
-        test: test);
     //test.patientId
 
     //optimize data saved
@@ -782,7 +776,7 @@ class _DetailsViewState extends State<TestView>
               ),
             ),
             StreamBuilder<FhrData?>(
-              stream: BluetoothCTGService.instance.streamData(),
+              stream: _bluetoothService.dataStream,
               builder: (context, snapshot) {
                 if(snapshot.hasData) {
                   fhrData = snapshot.data;
@@ -851,7 +845,7 @@ class _DetailsViewState extends State<TestView>
                                                     ),
                                                   ),
                                                 ),
-                                                 Container(
+                                                 SizedBox(
                                                     height: 0.25.sh,
                                                     width: 0.1.sh,
                                                     child: Visibility(
@@ -1077,7 +1071,7 @@ class _DetailsViewState extends State<TestView>
                                                     ),
                                                   ),
                                                 ),
-                                                 Container(
+                                                 SizedBox(
                                                     height: 0.25.sh,
                                                     width: 0.1.sh,
                                                     child: Visibility(
@@ -1586,7 +1580,7 @@ class _DetailsViewState extends State<TestView>
                                         ),
                                         Expanded(
                                           child: AutoSizeText.rich(TextSpan(text:
-                                          '${(fhrData?.pi ?? 0)==0? "---" : (fhrData?.pi.toStringAsFixed(1) ?? "---")}',
+                                          (fhrData?.pi ?? 0)==0? "---" : (fhrData?.pi.toStringAsFixed(1) ?? "---"),
                                               //'${fhrData?.pi ?? "---"}',
                                               children: [
                                                 TextSpan(text: "\nPI%",
